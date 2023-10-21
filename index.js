@@ -28,7 +28,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    
+
 
 
     // database collections 
@@ -36,27 +36,55 @@ async function run() {
 
     // post add product
     app.post("/products", async (req, res) => {
-        const user = req.body;
-        //   console.log(user);
-        const result = await productCollection.insertOne(user);
-        console.log(result);
-        res.send(result);
-      });
+      const user = req.body;
+      //   console.log(user);
+      const result = await productCollection.insertOne(user);
+      console.log(result);
+      res.send(result);
+    });
 
     //   get and read data 
-      app.get("/products", async (req, res) => {
-        const result = await productCollection.find().toArray();
-        res.send(result);
-      });
-      
-// single data 
-      app.get('/products/:id', async (req, res) => {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        console.log(query)
-        const result = await productCollection.findOne(query);
-        res.send(result)
+    app.get("/products", async (req, res) => {
+      const result = await productCollection.find().toArray();
+      res.send(result);
+    });
+
+    // single data load / view detail
+    app.get('/products/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      console.log(query)
+      const result = await productCollection.findOne(query);
+      res.send(result)
     })
+
+
+    // single data load /update
+    //   app.get('/products/:id', async (req, res) => {
+    //     const id = req.params.id;
+    //     const query = { _id: new ObjectId(id) };
+    //     console.log(query)
+    //     const result = await productCollection.findOne(query);
+    //     res.send(result)
+    // })
+
+    app.get('/products/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedProduct  = req.body;
+      const product = {
+        $set: {
+          photo: updatedProduct.photo,
+          name: updatedProduct.name,
+          textarea: updatedProduct.textarea,
+          price: updatedProduct, price,
+          rating: updatedProduct.rating
+        }
+      }
+      const result = await productCollection.updateOne(filter, product,options )
+    })
+
 
 
 
@@ -69,7 +97,7 @@ async function run() {
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-    
+
   }
 }
 run().catch(console.dir);
@@ -78,9 +106,9 @@ run().catch(console.dir);
 
 
 app.get("/", (req, res) => {
-    res.send("Crud is running...");
-  });
-  
-  app.listen(port, () => {
-    console.log(`Simple Crud is Running on port ${port}`);
-  });
+  res.send("Crud is running...");
+});
+
+app.listen(port, () => {
+  console.log(`Simple Crud is Running on port ${port}`);
+});
